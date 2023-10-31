@@ -1,5 +1,4 @@
-aioredis==2.0.1
-annotated-types==0.6.0
+annotated-types==0.5.0
 anyio==3.7.1
 async-timeout==4.0.3
 click==8.1.7
