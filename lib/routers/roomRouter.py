@@ -7,24 +7,6 @@ from ..resources.utilities import SUCESSFUL, NOT_FOUND, FORBIDEEN, CRASH, NOT_FO
 
 cache = Cache()
 
-# def exp_parser(self, exp_time):
-    # exp_time = str(exp_time)
-    # if exp_time == "0": return "No days"
-
-    # current_time = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-    # current_date = datetime.strptime(current_time, '%Y-%m-%d %H:%M:%S')
-    # vip_exp_date = datetime.strptime(exp_time, '%Y-%m-%d %H:%M:%S')
-    # dif = current_date-vip_exp_date
-    # date_str = str(dif)
-    # if date_str.find("days") == -1: return 1
-    # temp_list = date_str.split(" days")
-    # exp_date = int(temp_list[0])
-
-    # if exp_date < 30: return exp_date
-
-    # return "Expired"
-
-
 class RoomRouter(RoomFunctions):
     def __init__(self):
         self.router = APIRouter()
@@ -40,7 +22,7 @@ class RoomRouter(RoomFunctions):
                 "messages": [],
             }
             cache.dset(room_id, data)
-            
+
             return self.successful({
                 "room": room_id,
                 "data": data,
@@ -50,9 +32,9 @@ class RoomRouter(RoomFunctions):
         @self.router.get("/room/{room_id}/")
         def get_room(room_id: str) -> dict:
             data = cache.dget(room_id)
-            
+
             if not data: return self.invaild_room(room_id)
-                
+
             return self.successful({
                 "room": room_id,
                 "data": data,
@@ -61,12 +43,12 @@ class RoomRouter(RoomFunctions):
         @self.router.delete("/room/delete/{room_id}/")
         def delete(room_id: str) -> dict:
             cache.delete(room_id)
-                
+
             return self.successful({
                 "room": room_id,
                 "data": None,
              })
-            
+
         @self.router.post("/room/message/")
         def message(data: message_room) -> dict:
             room_id = data.room_id
@@ -76,11 +58,11 @@ class RoomRouter(RoomFunctions):
             message = data.message
             user_is_valid = True
             room_data = cache.dget(room_id)
-            
+
             if not room_data: return self.invaild_room(room_id=room_id)
-                
+
             user_data = cache.dget(user_id)
-            
+
             if not user_data: 
                 display_name = display_name if display_name else "Anon#" + get_random_integer_string()
                 user_id = get_uid()
@@ -90,12 +72,12 @@ class RoomRouter(RoomFunctions):
                     "created_at": get_current_date(),
                 }
                 user_is_valid = False
-                
+
             if user_is_valid and token != user_data.get("token"): return self.bad_token({ "message": "bad token" })
-            
+
             user_data["token"] = get_uid()
             token = user_data.get("token")
-                
+
             message_data = {
                 "display_name": user_data.get("display_name"),
                 "user_id": user_data.get("user_id"),
@@ -103,11 +85,11 @@ class RoomRouter(RoomFunctions):
                 "message": message,
                 "deleted": False,
             }
-            
+
             room_data["messages"].append(message_data)
             cache.dset(room_id, room_data)
             cache.dset(user_id, user_data)
-            
+
             return self.successful({
                 "room": room_id,
                 "user_id": user_id,
@@ -124,31 +106,31 @@ class RoomRouter(RoomFunctions):
             message = data.message
             message_id = data.message_id
             room_data = cache.dget(room_id)
-            
+
             if not room_data: return self.invaild_room(room_id=room_id)
-                
+
             user_data = cache.dget(user_id)
-            
+
             if not user_data: return self.forbidden()
-                
+
             if token != user_data.get("token"): return self.bad_token({ "message": "bad token" })
-            
+
             message_data = {}
             try:
                 message_data = room_data["messages"][message_id]
             except IndexError:
                 return self.crash({ "message": "no such message" })
-            
+
             user_data["token"] = get_uid()
             token = user_data.get("token")
-                
+
             message_data["message"] = message
             message_data["updated_at"] = get_current_date()
-            
+
             room_data["messages"][message_id] = message_data
             cache.dset(room_id, room_data)
             cache.dset(user_id, user_data)
-            
+
             return self.successful({
                 "room": room_id,
                 "user_id": user_id,
@@ -164,30 +146,30 @@ class RoomRouter(RoomFunctions):
             token = data.token
             message_id = data.message_id
             room_data = cache.dget(room_id)
-            
+
             if not room_data: return self.invaild_room(room_id=room_id)
-                
+
             user_data = cache.dget(user_id)
-            
+
             if not user_data: return self.forbidden()
-                
+
             if token != user_data.get("token"): return self.bad_token({ "message": "bad token" })
-            
+
             message_data = {}
             try:
                 message_data = room_data["messages"][message_id]
             except IndexError:
                 return self.crash({ "message": "no such message" })
-            
+
             user_data["token"] = get_uid()
             token = user_data.get("token")
-                
+
             message_data["deleted"] = True
-            
+
             room_data["messages"][message_id] = message_data
             cache.dset(room_id, room_data)
             cache.dset(user_id, user_data)
-            
+
             return self.successful({
                 "room": room_id,
                 "user_id": user_id,
