@@ -6,10 +6,17 @@ import json
 redis = Redis(
     host=REDIS_HOST,
     port=REDIS_PORT, 
-    password=REDIS_PASSWORD,
+    # password=REDIS_PASSWORD,
 )
 
 class Cache:
+    _instance = None  
+    
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super(Cache, cls).__new__(cls)
+        return cls._instance
+        
     def get(self, name): 
         raw_data = redis.get(name)
         

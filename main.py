@@ -7,5 +7,4 @@ app = FastAPI()
 def home():
     return "live response api, by github.com/thullyDev"
 
-room_router = RoomRouter()
-app.include_router(room_router.router, prefix="/v1")
+app.include_router(RoomRouter().router, prefix="/v1")

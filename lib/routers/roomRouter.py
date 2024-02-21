@@ -8,9 +8,17 @@ from ..resources.utilities import SUCESSFUL, NOT_FOUND, FORBIDEEN, CRASH, NOT_FO
 cache = Cache()
 
 class RoomRouter(RoomFunctions):
+    _instance = None
+    
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super(RoomRouter, cls).__new__(cls)
+        return cls._instance  
+    
     def __init__(self):
         self.router = APIRouter()
         self.setup_routes()
+        
 
     def setup_routes(self):
         @self.router.get("/room/create/")
