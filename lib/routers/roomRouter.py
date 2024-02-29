@@ -57,7 +57,7 @@ class RoomRouter(RoomFunctions):
                 "data": None,
              })
 
-        @self.router.post("/room/message/")
+        @self.router.post("/room/message/send")
         def message(data: message_room) -> dict:
             room_id = data.room_id
             user_id = data.user_id
