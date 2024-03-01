@@ -67,13 +67,14 @@ class RoomRouter(RoomFunctions):
             user_is_valid = True
             room_data = cache.dget(room_id)
 
+            if len(user_id) < 10: return self.bad_token({ "message": "user_id length should be longer then 10" })
+
             if not room_data: return self.invaild_room(room_id=room_id)
 
             user_data = cache.dget(user_id)
 
             if not user_data: 
                 display_name = display_name if display_name else "Anon#" + get_random_integer_string()
-                user_id = get_uid()
                 user_data = {
                     "display_name": display_name,
                     "user_id": user_id,
@@ -99,8 +100,10 @@ class RoomRouter(RoomFunctions):
             cache.dset(user_id, user_data)
 
             return self.successful({
-                "room": room_id,
+                "room_id": room_id,
                 "user_id": user_id,
+                "display_name": display_name.get("display_name"),
+                "created_at": message_data.get("display_name"),
                 "message": message,
                 "message_id": len(room_data["messages"]) - 1,
                 "token": token,
@@ -115,6 +118,7 @@ class RoomRouter(RoomFunctions):
             message_id = data.message_id
             room_data = cache.dget(room_id)
 
+            if len(user_id) < 10: return self.bad_token({ "message": "user_id length should be longer then 10" })
             if not room_data: return self.invaild_room(room_id=room_id)
 
             user_data = cache.dget(user_id)
@@ -155,6 +159,7 @@ class RoomRouter(RoomFunctions):
             message_id = data.message_id
             room_data = cache.dget(room_id)
 
+            if len(user_id) < 10: return self.bad_token({ "message": "user_id length should be longer then 10" })
             if not room_data: return self.invaild_room(room_id=room_id)
 
             user_data = cache.dget(user_id)
