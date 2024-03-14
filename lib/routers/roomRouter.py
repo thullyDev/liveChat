@@ -14,6 +14,7 @@ from ..resources.utilities import (
     get_current_date,
     generate_random_code
 )
+import json
 
 
 cache = Cache()
@@ -33,6 +34,25 @@ class RoomRouter(RoomFunctions):
         
 
     def setup_routes(self):
+        @self.router.get("/room/create/")
+        def create() -> dict:
+            room_id = "room:*" + get_uid()
+            data = {
+                "room_id": room_id,
+                "room_code": generate_random_code(),
+                "created_at": get_current_date(),
+                "chatters_amount": 0,
+                "chatters": [],
+                "messages": [],
+            }
+            cache.dset(room_id, data)
+
+            return self.successful({
+                "room": room_id,
+                "data": data,
+                "message": SUCESSFUL_MSG + ", room will be deleted after 24 hours", 
+             })
+
         @self.router.post("/room/")
         def get_room(data: room_type) -> dict:
             room_id = data.room_id
@@ -49,33 +69,23 @@ class RoomRouter(RoomFunctions):
                 "data": room_data,
              })
 
-        @self.router.get("/room/create/")
-        def create() -> dict:
-            room_id = get_uid()
-            data = {
-                "room_id": room_id,
-                "room_code": generate_random_code(),
-                "created_at": get_current_date(),
-                "messages": [],
-            }
-            cache.dset(room_id, data)
+        @self.router.get("/rooms_views/")
+        def rooms_views() -> dict:
+            keys = cache.redis.keys()
+            room_keys = [
+                key.decode()
+                for key in keys
+                if key.decode().find("room:*") != -1
+            ]
+            rooms = cache.redis.mget(room_keys)
+            data = {}
+            for rawroom in rooms:
+                room = json.loads(rawroom.decode())
+                room_id = room["room_id"]
+                data[room_id] = room.get("chatters_amount", 0)
 
-            return self.successful({
-                "room": room_id,
-                "data": data,
-                "message": SUCESSFUL_MSG + ", room will be deleted after 24 hours", 
-             })
+            return self.successful({ "data": data })
 
-        # get views, get amount of chatters
-
-        # @self.router.delete("/room/delete/{room_id}/")
-        # def delete(room_id: str) -> dict:
-        #     cache.delete(room_id)
-
-        #     return self.successful({
-        #         "room": room_id,
-        #         "data": None,
-        #      })
 
         @self.router.post("/room/message/send")
         def message(data: message_room) -> dict:
@@ -120,6 +130,10 @@ class RoomRouter(RoomFunctions):
             }
 
             room_data["messages"].append(message_data)
+            room_data["chatters"].append(user_id)
+            room_data["chatters"] = list(set(room_data["chatters"]))
+            room_data["chatters_amount"] = len(room_data["chatters"])
+
             cache.dset(room_id, room_data)
             cache.dset(user_id, user_data)
 

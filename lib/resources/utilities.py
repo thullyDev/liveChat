@@ -1,7 +1,7 @@
 from decouple import config
 from uuid import uuid4
-from random import randint
 from datetime import datetime
+import random
 
 REDIS_PORT = config("REDIS_PORT")
 REDIS_HOST = config("REDIS_HOST")
@@ -18,7 +18,7 @@ CRASH_MSG = "unexpected issue";
 def get_uid(): return str(uuid4().hex)
 
 def get_random_integer_string():
-    random_integers = [str(randint(0, 9)) for _ in range(5)]
+    random_integers = [str(random.randint(0, 9)) for _ in range(5)]
     return ''.join(random_integers)
 
 def generate_random_code(length=6): return ''.join(random.choices('0123456789', k=length))
