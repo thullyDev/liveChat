@@ -21,4 +21,6 @@ def get_random_integer_string():
     random_integers = [str(randint(0, 9)) for _ in range(5)]
     return ''.join(random_integers)
 
+def generate_random_code(length=6): return ''.join(random.choices('0123456789', k=length))
+
 def get_current_date(): return datetime.today().strftime('%Y-%m-%d %H:%M:%S')
