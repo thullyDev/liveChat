@@ -23,7 +23,8 @@ class delete_message(BaseModel):
     room_id: str
     token: str
 
-class get_room(BaseModel):
+class room_type(BaseModel):
+    room_id: str
     room_code: str
 
 # class delete_room(BaseModel):

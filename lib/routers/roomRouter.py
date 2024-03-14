@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..functions.roomFunctions import RoomFunctions
-from ..models.roomModels import message_room, edit_message, delete_message, get_room
+from ..models.roomModels import message_room, edit_message, delete_message, room_type
 from ..resources.database import Cache
 from ..resources.utilities import (
     SUCESSFUL, 
@@ -34,7 +34,7 @@ class RoomRouter(RoomFunctions):
 
     def setup_routes(self):
         @self.router.post("/room/")
-        def get_room(data: get_room) -> dict:
+        def get_room(data: room_type) -> dict:
             room_id = data.room_id
             code = data.room_code
             room_data = cache.dget(room_id)
