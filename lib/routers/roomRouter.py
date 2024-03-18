@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi.middleware.cors import CORSMiddleware
 from ..functions.roomFunctions import RoomFunctions
 from ..models.roomModels import message_room, edit_message, delete_message, room_type
 from ..resources.database import Cache
@@ -86,7 +87,6 @@ class RoomRouter(RoomFunctions):
 
             return self.successful({ "data": data })
 
-
         @self.router.post("/room/message/send")
         def message(data: message_room) -> dict:
             room_id = data.room_id
@@ -101,7 +101,7 @@ class RoomRouter(RoomFunctions):
 
             if code != room_code: return self.bad_token({ "message": "the room code is invaild" })
 
-            if len(user_id) < 10: return self.bad_token({ "message": "user_id length should be longer then 10" })
+            if user_id != "None" and len(user_id) < 10: return self.bad_token({ "message": "user_id length should be longer then 10" })
 
             if not room_data: return self.invaild_room(room_id=room_id)
 
@@ -130,7 +130,7 @@ class RoomRouter(RoomFunctions):
             }
 
             room_data["messages"].append(message_data)
-            room_data["chatters"].append(user_id)
+            room_data["chatters"].append(message_data["user_id"])
             room_data["chatters"] = list(set(room_data["chatters"]))
             room_data["chatters_amount"] = len(room_data["chatters"])
 
@@ -138,14 +138,16 @@ class RoomRouter(RoomFunctions):
             cache.dset(user_id, user_data)
 
             return self.successful({
-                "room_id": room_id,
-                "user_id": user_id,
-                "display_name": display_name.get("display_name"),
-                "created_at": message_data.get("display_name"),
-                "message": message,
-                "message_id": len(room_data["messages"]) - 1,
-                "token": token,
-             })
+                "data": {
+                    "room_id": room_id,
+                    "user_id": user_id,
+                    "display_name": message_data.get("display_name"),
+                    "created_at": message_data.get("created_at"),
+                    "message": message,
+                    "message_id": len(room_data["messages"]) - 1,
+                    "token": token,
+                 }
+            })
 
         @self.router.post("/room/message/edit/")
         def edit_user_message(data: edit_message) -> dict:
@@ -185,12 +187,14 @@ class RoomRouter(RoomFunctions):
             cache.dset(user_id, user_data)
 
             return self.successful({
-                "room": room_id,
-                "user_id": user_id,
-                "message": message,
-                "message_id": message_id,
-                "token": token,
-             })
+                "data":{
+                    "room": room_id,
+                    "user_id": user_id,
+                    "message": message,
+                    "message_id": message_id,
+                    "token": token,
+                 }
+            })
 
         @self.router.post("/room/message/delete/")
         def delete_user_message(data: delete_message) -> dict:
@@ -227,10 +231,12 @@ class RoomRouter(RoomFunctions):
             cache.dset(room_id, room_data)
             cache.dset(user_id, user_data)
 
-            return self.successful({
-                "room": room_id,
-                "user_id": user_id,
-                "message": message,
-                "message_id": message_id,
-                "token": token,
+            return self.successful({ 
+                "data": {
+                    "room": room_id,
+                    "user_id": user_id,
+                    "message": message,
+                    "message_id": message_id,
+                    "token": token,
+                 }
              })
