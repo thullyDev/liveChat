@@ -35,7 +35,7 @@ class Cache:
         if exp: self.redis.set(name, value, exp)
         else: self.redis.set(name, value)
         
-    def dset(self, name, data, exp=None):
+    def dset(self, name, data, exp=86400):  #? default expiring time is 24 hours
         raw_data = json.dumps(data)
         
         if exp: self.redis.set(name, raw_data, exp)
